@@ -1,5 +1,6 @@
 import datetime
 import os
+import threading
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -50,4 +51,24 @@ def upload_document():
     )
     db.session.add(document)
     db.session.commit()
+    document_id = document.id
+    file_content = file.read()
+    # Start a new thread to parse the document asynchronously
+    thread = threading.Thread(target=parse_document, args=(document_id, file_content))
+    thread.daemon = True
+    thread.start()
     return jsonify(message="Document uploaded successfully!"), 201
+
+def parse_document(document_id, file_content: bytes):
+    with app.app_context(): #mandatory to access the database outside of request context
+        document = db.session.get(File, document_id)
+        if not document:
+            print(f"Document with ID {document_id} not found.")
+            return
+        # Simulate parsing logic
+        print(f"Parsing document {document.filename} (ID: {document.id})...")
+        # Update document status to "parsed"
+        document.status = "success"
+        document.updated_at = datetime.datetime.now().isoformat()
+        db.session.commit()
+        print(f"Document {document.filename} parsed successfully!")
