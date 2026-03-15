@@ -67,7 +67,7 @@ def parse_document(document_id, file_content: bytes):
             return
         # Simulate parsing logic
         print(f"Parsing document {document.filename} (ID: {document.id})...")
-        # Update document status to "parsed"
+        # Update document status to "success" after parsing
         document.status = "success"
         document.updated_at = datetime.datetime.now().isoformat()
         db.session.commit()
